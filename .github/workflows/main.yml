@@ -21,7 +21,7 @@ jobs:
 
       - name: Build and push Docker image to ECR
         run: |
-          docker build --platform linux/amd64,linux/arm64 -t ${{ secrets.AWS_ACCOUNT_ID }} 381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application ${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest .
+          docker build ./Dockerfile -t ${{ secrets.AWS_ACCOUNT_ID }} 381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application ${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest .
           docker tag ${{ secrets.AWS_ACCOUNT_ID }} 381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application ${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest 381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application
           docker push 381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application
 
