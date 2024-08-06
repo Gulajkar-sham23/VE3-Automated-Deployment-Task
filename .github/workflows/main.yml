@@ -22,7 +22,9 @@ jobs:
       - name: Build and push Docker image to ECR
         run: |
           docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest .
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
+          docker tag ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest 381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application
+          docker push 381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application
+
 
       - name: Login to Amazon ECR
         id: login-ecr
