@@ -22,7 +22,7 @@ jobs:
       - name: Build and optimize Docker image
         run: |
           docker buildx create --use
-          docker buildx build --build-context -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest ./Dockerfile .
+          docker buildx build -f -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest ./Dockerfile .
 
       - name: Login to Amazon ECR
         id: login-ecr
