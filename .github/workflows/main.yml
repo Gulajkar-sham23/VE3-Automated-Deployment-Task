@@ -36,3 +36,16 @@ jobs:
     - name: Deploy to ECS
       run: |
           aws ecs update-service --cluster php-app-cluster --service php-app-service --force-new-deployment --region ${{ secrets.AWS_REGION }}
+
+    - name: Run Integration Tests
+      run: |
+          # Wait for a few seconds to allow the new deployment to start
+          sleep 30
+          # Run integration tests against the deployed service
+          curl -f http://54.174.247.144 || exit 1
+
+    - name: Rollback Deployment on Failure
+      if: failure()
+      run: |
+          # Rollback to the previous stable deployment
+          aws ecs update-service --cluster php-app-cluster --service php-app-service --force-new-deployment --region ${{ secrets.AWS_REGION }} --desired-count 0
