@@ -1,51 +1,44 @@
-name: CI/CD Pipeline
+name: Build and Deploy to AWS ECR
 
 on:
   push:
     branches:
-      - main  # Trigger on push to main branch
-  pull_request:
-    branches:
-      - main  # Trigger on pull request to main branch
+      - main
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
-      - name: Build and optimize Docker image
-        run: |
-          docker buildx create --use
-          docker buildx build --tag php-app:latest --file . ${{ secrets.AWS_ACCOUNT_ID }} 381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application ${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }} 
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          registry: ${{ secrets.AWS_ACCOUNT_ID }} 381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application ${{ secrets.AWS_REGION }}.amazonaws.com
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application ${{ secrets.AWS_REGION }}.amazonaws.com
+
+      - name: Build Docker image
+        run: |
+          docker build -t php-app:latest .
+
+      - name: Tag Docker image
+        run: |
+          docker tag php-app:latest ${{ secrets.AWS_ACCOUNT_ID }}381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application ${{ secrets.AWS_REGION }}.amazonaws.com/php-app:latest
+
+      - name: Push Docker image to ECR
+        run: |
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application ${{ secrets.AWS_REGION }}.amazonaws.com/php-app:latest
 
       - name: Deploy to ECS
         run: |
-          aws ecs update-service --cluster ${{ secrets.ECS_CLUSTER_NAME }} --service ${{ secrets.ECS_SERVICE_NAME }} --force-new-deployment
-
-      - name: Integration tests
-        run: |
-          # Replace with actual integration tests command
-          echo "Running integration tests..."
-
-      - name: Rollback on failure
-        if: failure()
-        run: |
-          aws ecs update-service --cluster ${{ secrets.ECS_CLUSTER_NAME }} --service ${{ secrets.ECS_SERVICE_NAME }} --force-new-deployment
-
-      - name: Cleanup
-        run: |
-          docker buildx rm --all --force
+          aws ecs update-service --cluster my-cluster --service my-service --force-new-deployment --region ${{ secrets.AWS_REGION }}
