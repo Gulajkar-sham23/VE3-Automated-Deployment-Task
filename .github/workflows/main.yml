@@ -1,47 +1,38 @@
-name: Build and Deploy to AWS ECR
-
+---
+name: Build and Push Golang Image to AWS ECR
 on:
   push:
-    branches:
-      - main
-
+    branches: [ main ]
 jobs:
-  deploy:
+  build-and-push:
+    name: Build and Push to ECR
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
 
-      - name: Set up AWS CLI
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-          run: |
-             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | cat ~/my_password.txt
-  
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Log in to Amazon ECR
-        run: |
-           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login -u AWS -p ${{ secrets.AWS_ACCOUNT_ID }}381492094373.dkr.ecr.us-east-1.amazonaws.com ${{ secrets.AWS_REGION }}.amazonaws.com
 
-      - name: Build Docker image
-        run: |
-          docker build -t php-app:latest .
+    - name: Build, Tag, and Push the Image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: php-application
+        IMAGE_TAG: php-app
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Tag Docker image
-        run: |
-          docker tag php-app:latest ${{ secrets.AWS_ACCOUNT_ID }}381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application ${{ secrets.AWS_REGION }}.amazonaws.com/php-app:latest
-
-      - name: Push Docker image to ECR
-        run: |
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}381492094373.dkr.ecr.us-east-1.amazonaws.com ${{ secrets.AWS_REGION }}.amazonaws.com/php-app:latest
-
-      - name: Deploy to ECS
-        run: |
+    - name: Deploy to ECS
+      run: |
           aws ecs update-service --cluster my-cluster --service my-service --force-new-deployment --region ${{ secrets.AWS_REGION }}
