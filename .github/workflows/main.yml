@@ -23,7 +23,7 @@ jobs:
         run: |
           docker buildx create --name goofy_brattain
           docker buildx use goofy_brattain
-          docker buildx build --platform linux/amd64,linux/arm64 -t ${{ secrets.AWS_ACCOUNT_ID }} 381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application ${{ secrets.AWS_REGION }}.amazonaws.com/ ${{ secrets.ECR_REPOSITORY }}:latest -f ./Dockerfile 
+          docker buildx build --push -t ${{ secrets.AWS_ACCOUNT_ID }} 381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application ${{ secrets.AWS_REGION }}.amazonaws.com/ ${{ secrets.ECR_REPOSITORY }}:latest -f ./Dockerfile 
 
       - name: Login to Amazon ECR
         id: login-ecr
