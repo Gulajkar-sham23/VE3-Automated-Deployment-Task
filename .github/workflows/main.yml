@@ -22,7 +22,7 @@ jobs:
       - name: Build and optimize Docker image
         run: |
           docker buildx create --use
-          docker buildx build -t ${{ secrets.AWS_ACCOUNT_ID }} 381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application ${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}: latest --file /Dockerfile 
+          docker buildx build -t php-app:latest --file /Dockerfile ${{ secrets.AWS_ACCOUNT_ID }} 381492094373.dkr.ecr.us-east-1.amazonaws.com/php-application ${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }} 
 
       - name: Login to Amazon ECR
         id: login-ecr
