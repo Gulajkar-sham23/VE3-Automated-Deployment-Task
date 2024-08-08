@@ -12,13 +12,14 @@ RUN docker-php-ext-install mysqli
 COPY . /var/www/html
 
 # Expose port 80 for Apache (only for the build stage)
-EXPOSE 80
+EXPOSE 8080
 
 # Stage 2: Final Stage
 # Use an official Nginx image as the base image for the final stage
 FROM ubuntu:latest
 RUN apt update
 RUN apt install apache2 -y
+RUN rm -rf /var/www/html/*
 COPY index.html /var/www/html/index.html
 RUN chmod 777 /var/www/html
 RUN chmod 666 /var/www/html/index.html
