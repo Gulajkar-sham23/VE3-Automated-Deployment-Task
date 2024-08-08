@@ -12,7 +12,7 @@ RUN docker-php-ext-install mysqli
 COPY . /var/www/html
 
 # Expose port 80 for Apache (only for the build stage)
-EXPOSE 8080
+EXPOSE 80
 
 # Stage 2: Final Stage
 # Use an official Nginx image as the base image for the final stage
