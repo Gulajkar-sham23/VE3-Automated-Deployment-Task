@@ -19,6 +19,7 @@ EXPOSE 8080
 FROM ubuntu:latest
 RUN apt update
 RUN apt install apache2 -y
+RUN rm -rf /usr/share/nginx/html/*
 RUN rm -rf /var/www/html/*
 COPY index.html /var/www/html/index.html
 RUN chmod 777 /var/www/html
