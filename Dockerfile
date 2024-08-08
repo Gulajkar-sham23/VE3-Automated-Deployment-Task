@@ -16,19 +16,11 @@ EXPOSE 80
 
 # Stage 2: Final Stage
 # Use an official Nginx image as the base image for the final stage
-FROM nginx:alpine
-
-# Set the working directory to /usr/share/nginx/html
-WORKDIR /usr/share/nginx/html
-
-# Copy the built application from the previous stage
-COPY --from=builder /var/www/html /usr/share/nginx/html
-
-# Copy Nginx configuration file (if you have a custom one)
-# COPY nginx.conf /etc/nginx/nginx.conf
-
-# Expose port 80 for Nginx
+FROM ubuntu:latest
+RUN apt update
+RUN apt install apache2 -y
+COPY index.html /var/www/html/index.html
+RUN chmod 777 /var/www/html
+RUN chmod 666 /var/www/html/index.html
 EXPOSE 80
-
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["apache2ctl", "-D", "FOREGROUND"]
